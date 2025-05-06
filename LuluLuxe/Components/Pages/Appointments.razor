@@ -1,0 +1,92 @@
+﻿@page "/appointments"
+@inject NavigationManager Navigation
+@using LuluLuxe.Data
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Book Appointment</PageTitle>
+
+<EditForm Model="@appointment" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <h3>Book an Appointment</h3>
+
+    <div class="form-group">
+        <label for="fullName">Full Name:</label>
+        <InputText id="fullName" class="form-control" @bind="appointment.FullName" />
+    </div>
+
+    <div class="form-group">
+        <label for="service">Service:</label>
+        <InputSelect id="service" class="form-control" @bind="appointment.ServiceId">
+            <option value="">--Select Service--</option>
+            @foreach (var service in services)
+            {
+                <option value="@service.Id">@service.Name</option>
+            }
+        </InputSelect>
+    </div>
+
+    <div class="form-group">
+        <label for="appointmentDate">Appointment Date:</label>
+        <InputDate id="appointmentDate" class="form-control" @bind="appointment.AppointmentDate" />
+    </div>
+
+    <div class="form-group">
+        <label for="appointmentTime">Appointment Time:</label>
+        <InputTime id="appointmentTime" class="form-control" @bind="appointment.AppointmentTime" />
+    </div>
+
+    <div class="form-group">
+        <label>Service Price:</label>
+        <p>@selectedServicePrice</p> <!-- Display selected service price -->
+    </div>
+
+    <div class="form-group">
+        <label>Service Duration:</label>
+        <p>@selectedServiceDuration</p> <!-- Display selected service duration -->
+    </div>
+
+    <div class="form-group">
+        <button type="submit" class="btn btn-primary">Book Appointment</button>
+    </div>
+</EditForm>
+
+@code {
+    private Appointment appointment = new Appointment();
+    private List<Service> services = new List<Service>();
+    private string selectedServicePrice = string.Empty;
+    private string selectedServiceDuration = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Simulate fetching services from a database (You can replace this with actual DB logic)
+        services = await Task.FromResult(new List<Service>
+        {
+            new Service { Id = 1, Name = "Haircut", Price = 25.00m, Duration = TimeSpan.FromMinutes(45) },
+            new Service { Id = 2, Name = "Manicure", Price = 20.00m, Duration = TimeSpan.FromMinutes(30) },
+            new Service { Id = 3, Name = "Pedicure", Price = 25.00m, Duration = TimeSpan.FromMinutes(60) }
+        });
+    }
+
+    private void HandleValidSubmit()
+    {
+        // Handle form submission, for example, saving the appointment
+        Console.WriteLine($"Appointment booked for {appointment.FullName} on {appointment.AppointmentDate} at {appointment.AppointmentTime}");
+        
+        // Redirect to a confirmation page or some other action after submission
+        Navigation.NavigateTo("/confirmation");
+    }
+
+    // This method will be called when a service is selected.
+    private void UpdateServiceDetails()
+    {
+        var selectedService = services.FirstOrDefault(s => s.Id == appointment.ServiceId);
+        if (selectedService != null)
+        {
+            selectedServicePrice = selectedService.Price.ToString("C"); // Format as currency
+            selectedServiceDuration = selectedService.Duration.ToString(@"hh\:mm"); // Format as duration
+        }
+    }
+}
